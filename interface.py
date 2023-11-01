@@ -3,9 +3,8 @@ from cliente import Cliente
 from banco import BancoDeDados
 import os
 
-from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
 
 meuBanco = BancoDeDados()
