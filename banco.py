@@ -1,10 +1,12 @@
 import mysql.connector
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
 
 class BancoDeDados:
     def __init__(self):
         self.local = 'localhost'
         self.usuario = 'root'
-        self.senha = ''
+        self.senha = 'meuBanco'
         self.banco = 'sysifba'
         self.meuCursor = None
         self.mydb = None
@@ -29,6 +31,8 @@ class BancoDeDados:
                 return True
         except mysql.connector.Error as e:
             return e.msg
+
+    
 
 
     def salvarCliente(self, cliente):
@@ -60,7 +64,10 @@ class BancoDeDados:
         except mysql.connector.Error as e:
             return e.msg
 
+       
 
+
+        
     def pesquisarCliente(self, rg):
         query = "SELECT * FROM cliente WHERE rg = %s"
         values = (rg,)
