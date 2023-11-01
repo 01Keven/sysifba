@@ -18,13 +18,18 @@ def cadastrarCliente():
     rg = input('RG: ')
     endereco = input('Endereço: ')
     email = input('Email: ')
-    novoCliente = Cliente(nome, rg, endereco, email)
+    cidade = input('Cidade: ')
+    novoCliente = Cliente(nome, rg, endereco, email, cidade)
 
+   
     try:
         msg = meuBanco.salvarCliente(novoCliente)
         print(msg)
-    except:
+    except Exception as e:
         print('Problema com o banco. Contacte a assistência.')
+        print(e)
+        input()
+
 
 
 def visualizaRelatorio():
@@ -33,6 +38,7 @@ def visualizaRelatorio():
     RG = 2
     ENDERECO = 3
     EMAIL = 4
+    CIDADE = 5
 
     meusClientes = meuBanco.visualizarClientes()
     for umCliente in meusClientes:
@@ -40,6 +46,7 @@ def visualizaRelatorio():
         print(f'Endereço: {umCliente[ENDERECO]}')
         print(f'RG: {umCliente[RG]}')
         print(f'EMAIL: {umCliente[EMAIL]}')
+        print(f'CIDADE: {umCliente[CIDADE]}')
         print('-'*50)
     
 
@@ -49,6 +56,7 @@ def pesquisarCliente():
     RG = 2
     ENDERECO = 3
     EMAIL = 4
+    CIDADE = 5
 
     rg = input('Digite o RG: ')
 
@@ -59,6 +67,7 @@ def pesquisarCliente():
             print(f'Endereço: {cliente[ENDERECO]}')
             print(f'RG: {cliente[RG]}')
             print(f'EMAIL: {cliente[EMAIL]}')    
+            print(f'CIDADE: {cliente[CIDADE]}')    
             print('-'*50)
     except:
         print('Erro exibindo relatório')

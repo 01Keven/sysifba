@@ -5,6 +5,7 @@ class Cliente:
         self.rg = rg
         self.end = end
         self.email = email
+        self.cidade = cidade
 
     def editaNome(self, novo_nome):
         self.nome = novo_nome
@@ -18,6 +19,9 @@ class Cliente:
     def editaEmail (self, novo_email):
         self.email = novo_email
     
+    def editaCidade (self, nova_cidade):
+        self.cidade = nova_cidade
+    
     def retornaNome(self):
         return self.nome
 
@@ -29,3 +33,6 @@ class Cliente:
 
     def retornaEmail(self):
         return self.email
+    
+    def retornaCidade(self):
+        return self.cidade
