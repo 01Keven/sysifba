@@ -1,16 +1,16 @@
 import mysql.connector
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
+import xml.etree.ElementTree as ET
+from datetime import datetime
 
 class BancoDeDados:
     def __init__(self):
         self.local = 'localhost'
-        self.usuario = 'root'
+        self.usuario = 'root' #root
         self.senha = 'meuBanco'
         self.banco = 'sysifba'
         self.meuCursor = None
         self.mydb = None
-        self.port = '4306'
+        self.port = '3306' #4306
     
     def conecta(self):
         try: #tente fazer isso
@@ -22,7 +22,8 @@ class BancoDeDados:
             
             self.meuCursor = self.mydb.cursor()
             return self.meuCursor
-        except mysql.connector.Error as e: #se não conseguir, faça isso
+        except mysql.connector.Error as e:
+            self.exportarErrosParaXML([e.msg]) #se não conseguir, faça isso
             return e.msg
 
     def fecharCursor(self):
@@ -30,13 +31,33 @@ class BancoDeDados:
             if self.meuCursor.close():
                 return True
         except mysql.connector.Error as e:
+            self.exportarErrosParaXML([e.msg])
             return e.msg
 
     
+    def exportarErrosParaXML(self, erros):
+        try:
+            tree = ET.parse("erros_banco.xml")
+            root = tree.getroot()
+        except FileNotFoundError:
+            root = ET.Element("erros")
 
+        # Obtemos o último ID no XML para incrementar a partir dele
+        last_id = 0
+        for erro_element in root.findall(".//erro[@id]"):
+            last_id = max(last_id, int(erro_element.get("id")))
+
+        for i, erro in enumerate(erros):
+            erro_element = ET.SubElement(root, "erro")
+            erro_element.set("id", str(last_id + i + 1))  # Incrementa a partir do último ID
+            erro_element.set("data_hora", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            erro_element.text = f"{str(erro)}\n"  # Adiciona uma quebra de linha ao final
+
+        tree = ET.ElementTree(root)
+        tree.write("erros_banco.xml", xml_declaration=True, encoding='utf-8', method="xml")
 
     def salvarCliente(self, cliente):
-        query = "INSERT INTO cliente (nome, rg, endereco, email, cidade) VALUES (%s, %s, %s, %s, %s);"
+        query = "INSERT INTO cliente (nom, rg, endereco, email, cidade) VALUES (%s, %s, %s, %s, %s);"
         values = (cliente.retornaNome(), cliente.retornaRg(), cliente.retornaEndereco(), cliente.retornaEmail(), cliente.retornaCidade())
         meuCursor = self.conecta()
         try:
@@ -48,6 +69,7 @@ class BancoDeDados:
             else:
                 return ok
         except mysql.connector.Error as e:
+            self.exportarErrosParaXML([e.msg])
             return e.msg
  
     
@@ -62,6 +84,7 @@ class BancoDeDados:
             else:
                 return ok
         except mysql.connector.Error as e:
+            self.exportarErrosParaXML([e.msg])
             return e.msg
 
        
@@ -69,7 +92,7 @@ class BancoDeDados:
 
         
     def pesquisarCliente(self, rg):
-        query = "SELECT * FROM cliente WHERE rg = %s"
+        query = "SELECT * FROM cliente WHERE rg = %"
         values = (rg,)
         meuCursor = self.conecta()
         try:
@@ -80,6 +103,7 @@ class BancoDeDados:
             else:
                 return ok
         except mysql.connector.Error as e:
+            self.exportarErrosParaXML([e.msg])
             return e.msg
 
 
@@ -144,6 +168,7 @@ class BancoDeDados:
                 print(f'{meuCursor.rowcount} dados atualizados.')
                 self.fecharCursor()
             except mysql.connector.Error as e:
+                self.exportarErrosParaXML([e.msg])
                 print('Erro ao editar cliente')
                 print(e.msg)
 
@@ -155,27 +180,42 @@ class BancoDeDados:
         EMAIL = 4
         CIDADE = 5
         
-        clientes = self.pesquisarCliente(rg)
-        if clientes is not None:
-            for cli in clientes:
-                print(f'ID: {cli[ID]}\t NOME: {cli[NOME]}')
-                print(f'RG: {cli[RG]}\t ENDEREÇO: {cli[END]}')
-                print(f'EMAIL: {cli[EMAIL]}\t CIDADE: {cli[CIDADE]}')
-                print('Digite o novo valor ou ENTER para manter')
-                print('-' * 70)
+        while True:
+            rg = input("Digite o RG do cliente que deseja excluir (apenas números): ")
 
-            print('ESTA OPERAÇÃO NÃO PODE SER DESFEITA')
-            op = input('Digite SIM para excluir: ').upper()
-            if op == 'SIM':
-                query = f'DELETE FROM cliente WHERE rg = {rg}'
+            if rg.isdigit():
+                clientes = self.pesquisarCliente(rg)
+                if clientes is not None:
+                    for cli in clientes:
+                        print(f'ID: {cli[ID]}\t NOME: {cli[NOME]}')
+                        print(f'RG: {cli[RG]}\t ENDEREÇO: {cli[END]}')
+                        print(f'EMAIL: {cli[EMAIL]}')
+                        print('-' * 70)
 
-                try:
-                    meuCursor = self.conecta()
-                    meuCursor.execute(query)
-                    self.mydb.commit()
-                    print(f'{meuCursor.rowcount} dados excluidos.')
-                    self.fecharCursor()
-                except mysql.connector.Error as e:
-                    print('Erro ao editar cliente')
-                    print(e.msg)
+                    print('ESTA OPERAÇÃO NÃO PODE SER DESFEITA')
+                    op = input('Digite SIM para excluir, ou qualquer outra tecla para cancelar: ').upper()
+                    if op == 'SIM':
+                        query = f"DELETE FROM cliente WHERE rg = '{rg}'"
+
+                        try:
+                            meuCursor = self.conecta()
+                            meuCursor.execute(query)
+                            self.mydb.commit()
+                            print(f'{meuCursor.rowcount} dados excluídos.')
+                            self.fecharCursor()
+
+                        except mysql.connector.Error as e:
+                            self.exportarErrosParaXML([e.msg])
+                            print('Erro ao excluir cliente')
+                            print(e.msg)
+                    else:
+                        print('Operação cancelada.')
+                else:
+                    print('Cliente não encontrado com o RG informado.')
+            else:
+                print("O RG deve conter apenas números.")
+
+            continuar = input("Deseja continuar? (s/n): ").lower()
+            if continuar != 's':
+                break
 

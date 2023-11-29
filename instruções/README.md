@@ -1,4 +1,26 @@
+
 **Documentação do Sistema de Cadastro de Usuários**
+
+------------------------------------------------------------------------------------
+
+**Ambiente com Erros Propositais**
+
+- Este projeto foi feito de propósito com alguns erros intencionais em certas partes do código. A ideia é mostrar como identificar e lidar com problemas que podem acontecer em programas reais. Essas mudanças foram feitas de propósito para demonstrar como reconhecer, tratar e registrar falhas da maneira certa.
+
+# Erros que Você Pode Encontrar
+
+1. Erro ao Salvar um Novo Usuário
+
+    Quando você tentar cadastrar um novo cliente escolhendo a opção "Cadastrar Cliente" no menu principal, vai acontecer um erro. Isso ocorre porque uma parte do código foi alterada de propósito, causando um problema ao tentar salvar informações do usuário. O erro vai dizer que a palavra "nome" não foi definida, e essa falha será registrada em um arquivo especial chamado erros_banco.xml.
+
+2. Erro ao Pesquisar um Cliente
+
+    Se você tentar buscar um cliente usando a opção "Pesquisar Cliente" no menu principal e inserir um RG, vai acontecer outro erro intencional. Isso simula uma situação comum onde a busca no banco de dados é feita de forma errada. O sistema vai mostrar uma mensagem de erro indicando um problema na consulta ao banco de dados, e essa informação será registrada no arquivo erros_banco.xml.
+
+
+*Onde Encontrar os Erros*
+
+    Todas as informações sobre os erros, tanto os feitos de propósito quanto os que acontecem naturalmente, ficam registradas em um arquivo chamado erros_banco.xml. Este arquivo mostra detalhes sobre os problemas, como as mensagens de erro e quando aconteceram.
 
 -------------------------------------------------------------------------------------
 
@@ -36,35 +58,14 @@ Cadastro de novos usuários com os seguintes campos:
 
 # Sistema Operacional: Windows, Linux, MacOS
 # Python 3.x instalado
-# Módulos: mysql.connector, reportlab, 
+# Módulos: mysql.connector, reportlab, xml.etree.ElementTree, datetime
 
 Certifique-se de ter Python 3.x instalado em seu sistema.
 
 - Instale os módulos necessários utilizando o seguinte comando
 
-pip install mysql-connector-python reportlab
-
-# Configure o banco de dados MySQL com as credenciais apropriadas (host = 'localhost', usuário = 'root', senha = 'meuBanco', banco de dados = 'sysifba', port = '4306').
-
-*Modificação no Xampp* [IMPORTANTE!!!!]
-
-Ao configurar o ambiente de desenvolvimento no XAMPP, me deparei com um pequeno obstáculo: a porta padrão do MySQL estava conflitando com outros serviços em meu sistema. Para resolver esse problema, decidi trocar a porta padrão do MySQL para evitar qualquer interferência.
-
-A motivação por trás dessa alteração foi assegurar que o MySQL pudesse operar sem problemas no ambiente que eu estava configurando. Com a mudança da porta, eu garantia que o MySQL e outros serviços pudessem coexistir harmoniosamente no mesmo sistema, cada um utilizando uma porta exclusiva para a comunicação.
-
-# Passos para a Troca da Porta
-
-Abri o painel de controle do XAMPP e naveguei até a seção de configurações do MySQL.
-Localizei a opção de configuração de porta e a modifiquei para uma que não estava sendo utilizada por outros serviços.
-Após fazer essa alteração, reiniciei o serviço do MySQL para aplicar as mudanças.
-
-- Talvez seja necessario ir ate o caminho: C:\xampp\phpMyAdmin e configurar o arquivo (config.inc.php) trocando a porta e a senha se estiver vazia.
-
-Como deve ficar:
-$cfg['Servers'][$i]['port'] = 4306;
-$cfg['Servers'][$i]['password'] = 'meuBanco';
-
-**todas as portas devem ser mudadas para 4306**
+pip install mysql-connector-python
+pip install reportlab
 
 -------------------------------------------------------------------------------------
 

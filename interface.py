@@ -2,10 +2,14 @@
 from cliente import Cliente
 from banco import BancoDeDados
 import os
+import mysql.connector
 
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
+import xml.etree.ElementTree as ET
+from datetime import datetime
+
 
 meuBanco = BancoDeDados()
 
@@ -17,56 +21,72 @@ def pausar():
 
 
 def cadastrarCliente():
-    nome = input('Nome: ')
-    rg = input('RG: ')
-    endereco = input('Endereço: ')
-    email = input('Email: ')
-    cidade = input('Cidade: ')
-    novoCliente = Cliente(nome, rg, endereco, email, cidade)
-
     try:
-        msg = meuBanco.salvarCliente(novoCliente)
-        print(msg)
-    except Exception as e:
-        print('Problema com o banco. Contacte a assistência.')
-        print(e)
-        input()
+        ome = input('Nome: ')
+        rg = input('RG: ')
+        endereco = input('Endereço: ')
+        email = input('Email: ')
+        cidade = input('Cidade: ')
+        novoCliente = Cliente(nome, rg, endereco, email, cidade)
+    except NameError as ne:
+        erro_msg = f"Erro no Nome: {ne}"
+        meuBanco.exportarErrosParaXML([erro_msg])
+        print(erro_msg)
+    except meuBanco.mysql.connector.Error as e:
+        erro_msg = f"Erro de MySQL: {e}"
+        meuBanco.exportarErrosParaXML([erro_msg])
+        print(erro_msg)
 
 def gerarPDF(clientes):
-    pdf = SimpleDocTemplate('relatorio.pdf', pagesize=A4)
-    story = []
+    try:
+        pdf = SimpleDocTemplate('relatorio.pdf', pagesize=A4)
+        story = []
 
-    # Definindo os dados da tabela
-    dados = [["ID", "Nome", "RG", "Endereço", "Email", "Cidade"]] + clientes
+        # Definindo os dados da tabela
+        dados = [["ID", "Nome", "RG", "Endereço", "Email", "Cidade"]] + clientes
 
-   
-    tabela = Table(dados)
+    
+        tabela = Table(dados)
 
-    # Estilizando a tabela
-    style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                        ('GRID', (0, 0), (-1, -1), 1, colors.black)])
+        # Estilizando a tabela
+        style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                            ('GRID', (0, 0), (-1, -1), 1, colors.black)])
 
-    tabela.setStyle(style)
-    story.append(tabela)
+        tabela.setStyle(style)
+        story.append(tabela)
 
-    # Adicionando a tabela ao PDF
-    pdf.build(story)
+        # Adicionando a tabela ao PDF
+        pdf.build(story)
+    except meuBanco.mysql.connector.Error as e:
+        erro_msg = f"Erro de MySQL: {e}"
+        meuBanco.exportarErrosParaXML([erro_msg])
+        return e.msg
+    except Exception as e:
+        erro_msg = f"Erro desconhecido: {e}"
+        meuBanco.exportarErrosParaXML([erro_msg])
+        return e.msg
+        
 
 # organizar, mais legivel
 def main():
-    meuBanco = BancoDeDados()
-    clientes = meuBanco.visualizarClientes()
+    try:
+        meuBanco = BancoDeDados()
+        clientes = meuBanco.visualizarClientes()
 
-    if isinstance(clientes, list):
-        gerarPDF(clientes)
-        print("PDF criado com sucesso!")
-    else:
-        print(f"Erro ao obter os dados do banco de dados: {clientes}")
+    
+        if isinstance(clientes, list):
+            gerarPDF(clientes)
+            print("PDF criado com sucesso!")
+    except meuBanco.mysql.connector.Error as e:
+            meuBanco.exportarErrosParaXML([str(e)])
+            print(f"Erro ao obter os dados do banco de dados: {clientes}")
+            return e.msg    
+           
 
 # verificando se o script está sendo executado diretamente
 if __name__ == '__main__':
@@ -74,34 +94,49 @@ if __name__ == '__main__':
 
 
 def visualizaRelatorio():
-    ID = 0
-    NOME = 1
-    RG = 2
-    ENDERECO = 3
-    EMAIL = 4
-    CIDADE = 5
+    try:
+        ID = 0
+        NOME = 1
+        RG = 2
+        ENDERECO = 3
+        EMAIL = 4
+        CIDADE = 5
 
-    meusClientes = meuBanco.visualizarClientes()
-    for umCliente in meusClientes:
-        print(f'ID: {umCliente[ID]}\nNome: {umCliente[NOME]}')
-        print(f'Endereço: {umCliente[ENDERECO]}')
-        print(f'RG: {umCliente[RG]}')
-        print(f'EMAIL: {umCliente[EMAIL]}')
-        print(f'CIDADE: {umCliente[CIDADE]}')
-        print('-'*50)
+    
+        meusClientes = meuBanco.visualizarClientes()
+        for umCliente in meusClientes:
+            print(f'ID: {umCliente[ID]}\nNome: {umCliente[NOME]}')
+            print(f'Endereço: {umCliente[ENDERECO]}')
+            print(f'RG: {umCliente[RG]}')
+            print(f'EMAIL: {umCliente[EMAIL]}')
+            print(f'CIDADE: {umCliente[CIDADE]}')
+            print('-'*50)
+    except NameError as ne:
+        erro_msg = f"Erro de Nome: {ne}"
+        meuBanco.exportarErrosParaXML([erro_msg])
+        print(erro_msg)
+    except meuBanco.mysql.connector.Error as e:
+        erro_msg = f"Erro de MySQL: {e}"
+        meuBanco.exportarErrosParaXML([erro_msg])
+        print(erro_msg)
+    except Exception as e:
+        erro_msg = f"Erro desconhecido: {e}"
+        meuBanco.exportarErrosParaXML([erro_msg])
+        print(erro_msg)
     
 
 def pesquisarCliente():
-    ID = 0
-    NOME = 1
-    RG = 2
-    ENDERECO = 3
-    EMAIL = 4
-    CIDADE = 5
-
-    rg = input('Digite o RG: ')
-
     try:
+        ID = 0
+        NOME = 1
+        RG = 2
+        ENDERECO = 3
+        EMAIL = 4
+        CIDADE = 5
+
+        rg = input('Digite o RG: ')
+
+    
         pesquisa = meuBanco.pesquisarCliente(rg)
         for cliente in pesquisa:
             print(f'ID: {cliente[ID]} \tNome: {cliente[NOME]}')
@@ -110,8 +145,11 @@ def pesquisarCliente():
             print(f'EMAIL: {cliente[EMAIL]}')    
             print(f'CIDADE: {cliente[CIDADE]}')    
             print('-'*50)
-    except:
-        print('Erro exibindo relatório')
+    except meuBanco.mysql.connector.Error as e:
+        erro_msg = f"Erro de MySQL: {e}"
+        meuBanco.exportarErrosParaXML([erro_msg])
+        print(erro_msg)
+    
 
 
 
